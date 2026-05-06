@@ -8,46 +8,185 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Estilos básicos (você pode personalizar depois) */
-        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #333; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #218838; }
-        .error { color: red; font-size: 0.9em; margin-top: 10px; text-align: center; display: none; }
-        .success { color: green; font-size: 0.9em; margin-top: 10px; text-align: center; display: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container { 
+            background: white; 
+            padding: 2.5rem; 
+            border-radius: 16px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            width: 100%; 
+            max-width: 450px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 3rem;
+        }
+        h2 { 
+            text-align: center; 
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            color: #333; 
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        input { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        button:hover:not(:disabled) { 
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .error { 
+            background: #fee; 
+            color: #c33; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+            border-left: 4px solid #c33;
+        }
+        .success { 
+            background: #efe; 
+            color: #3c3; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+            border-left: 4px solid #3c3;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .check-icon {
+            text-align: center;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📚 Fique Fluente</h2>
-    <p style="text-align: center; color: #666;">Crie sua conta para acessar o curso</p>
+    <div class="logo">📚</div>
+    <h2>Fique Fluente</h2>
+    <p class="subtitle">Crie sua conta para acessar o curso</p>
     
     <div id="errorMsg" class="error"></div>
     <div id="successMsg" class="success"></div>
 
     <form id="registerForm">
-        <label>Nome Completo</label>
-        <input type="text" id="fullName" required placeholder="Seu nome">
+        <div class="form-group">
+            <label for="fullName">Nome Completo *</label>
+            <input type="text" id="fullName" required placeholder="Seu nome completo">
+        </div>
 
-        <label>Email (o mesmo da compra)</label>
-        <input type="email" id="email" required placeholder="seu@email.com">
+        <div class="form-group">
+            <label for="email">Email (o mesmo da compra) *</label>
+            <input type="email" id="email" required placeholder="seu@email.com">
+        </div>
 
-        <label>Senha</label>
-        <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+        <div class="form-group">
+            <label for="password">Senha (mínimo 6 caracteres) *</label>
+            <input type="password" id="password" required minlength="6" placeholder="••••••">
+        </div>
 
-        <button type="submit" id="btnSubmit">Criar Conta</button>
+        <div class="form-group">
+            <label for="confirmPassword">Confirmar Senha *</label>
+            <input type="password" id="confirmPassword" required minlength="6" placeholder="••••••">
+        </div>
+
+        <button type="submit" id="btnSubmit">
+            Criar Conta
+        </button>
     </form>
+
+    <div class="login-link">
+        Já tem conta? <a href="../curso/index.html">Fazer login</a>
+    </div>
 </div>
 
 <script>
-    // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
+    // ⚠️ CONFIGURAÇÃO DO SUPABASE
     const SUPABASE_URL = 'https://rvgcniaowzmsudziiozf.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2Z2NuaWFvd3ptc3Vkemxpb3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MjQxNzQsImV4cCI6MjA5MTQwMDE3NH0.uwwKFLuK-XyPoXPrB6_CseRTiD9d-iyMQSPWrFw-l-I'; 
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2Z2NuaWFvd3ptc3Vkemxpb3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MjQxNzQsImV4cCI6MjA5MTQwMDE3NH0.uwwKFLuK-XyPoXPrB6_CseRTiD9d-iyMQSPWrFw-l-I';
+    
+    // ✅ Cria o cliente com nome diferente para evitar conflito
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const form = document.getElementById('registerForm');
     const errorMsg = document.getElementById('errorMsg');
@@ -57,67 +196,125 @@
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const fullName = document.getElementById('fullName').value;
-        const email = document.getElementById('email').value.toLowerCase();
+        const fullName = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim().toLowerCase();
         const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
 
-        // Limpa mensagens
-        errorMsg.style.display = 'none';
-        successMsg.style.display = 'none';
-        btnSubmit.disabled = true;
-        btnSubmit.innerText = 'Verificando...';
+        // Validações
+        if (password !== confirmPassword) {
+            showError('As senhas não coincidem!');
+            return;
+        }
+
+        if (password.length < 6) {
+            showError('A senha deve ter pelo menos 6 caracteres!');
+            return;
+        }
+
+        setLoading(true);
+        hideMessages();
 
         try {
-            // 1. Verifica se o email foi aprovado pela Cakto
-            // Chama a função RPC que criamos no Supabase
-            const {  isApproved, error: checkError } = await supabase.rpc('fiquefluente_check_approved_email', { p_email: email });
+            // 1. Verifica se email está aprovado na Cakto
+            const {  isApproved, error: checkError } = await supabaseClient.rpc(
+                'fiquefluente_check_approved_email',
+                { p_email: email }
+            );
 
-            if (checkError) throw checkError;
-
+            if (checkError) {
+                console.error('Erro ao verificar email:', checkError);
+                throw new Error('❌ Email não encontrado em nossas compras. Verifique se usou o mesmo email da compra na Cakto.');
+            }
+            
             if (!isApproved) {
-                throw new Error('❌ Email não encontrado. Use o mesmo email da compra na Cakto.');
+                throw new Error('❌ Email não encontrado. Use o mesmo email da compra na Cakto ou entre em contato com o suporte.');
             }
 
-            // 2. Cria o usuário no Auth do Supabase
-            const {  authData, error: authError } = await supabase.auth.signUp({
+            // 2. Cria usuário no Supabase Auth
+            const {  authData, error: authError } = await supabaseClient.auth.signUp({
                 email,
                 password,
-                options: { data: { full_name: fullName } }
+                options: {
+                    data: {
+                        full_name: fullName
+                    }
+                }
             });
 
-            if (authError) throw authError;
+            if (authError) {
+                console.error('Erro no auth:', authError);
+                if (authError.message.includes('already registered')) {
+                    throw new Error('Este email já está cadastrado. Tente fazer login.');
+                }
+                throw authError;
+            }
 
-            // 3. Salva os dados na tabela de usuários
-            const { error: insertError } = await supabase
+            if (!authData.user) {
+                throw new Error('Falha na criação do usuário');
+            }
+
+            // 3. Insere dados na tabela fiquefluente_users
+            const { error: insertError } = await supabaseClient
                 .from('fiquefluente_users')
                 .insert({
                     id: authData.user.id,
                     email: email,
                     full_name: fullName,
-                    password_hash: 'auth_managed' // Apenas marcador, o Supabase Auth gerencia a senha
+                    password_hash: 'auth_managed'
                 });
 
-            if (insertError) throw insertError;
+            if (insertError) {
+                console.error('Erro ao inserir user:', insertError);
+                throw insertError;
+            }
 
-            // 4. Marca o email como "usado" para não permitir outro cadastro com o mesmo email
-            await supabase.rpc('fiquefluente_mark_email_used', { p_email: email, p_user_id: authData.user.id });
+            // 4. Marca email como usado
+            await supabaseClient.rpc('fiquefluente_mark_email_used', {
+                p_email: email,
+                p_user_id: authData.user.id
+            });
 
-            // Sucesso!
-            successMsg.innerText = '✅ Conta criada! Redirecionando...';
-            successMsg.style.display = 'block';
+            // 5. Sucesso!
+            showSuccess('✅ Conta criada com sucesso! Redirecionando...');
             
             setTimeout(() => {
-                // Redireciona para o dashboard (vamos criar na próxima etapa)
-                window.location.href = '../curso/index.html'; 
+                window.location.href = '../curso/index.html';
             }, 2000);
 
-        } catch (err) {
-            errorMsg.innerText = err.message;
-            errorMsg.style.display = 'block';
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = 'Criar Conta';
+        } catch (error) {
+            console.error('Erro no cadastro:', error);
+            showError(error.message || 'Erro ao criar conta. Tente novamente.');
+            setLoading(false);
         }
     });
+
+    function showError(message) {
+        errorMsg.textContent = message;
+        errorMsg.style.display = 'block';
+        successMsg.style.display = 'none';
+    }
+
+    function showSuccess(message) {
+        successMsg.textContent = message;
+        successMsg.style.display = 'block';
+        errorMsg.style.display = 'none';
+    }
+
+    function hideMessages() {
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+    }
+
+    function setLoading(loading) {
+        if (loading) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = 'Criando conta <span class="loading"></span>';
+        } else {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Criar Conta';
+        }
+    }
 </script>
 
 </body>
