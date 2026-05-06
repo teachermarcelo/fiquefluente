@@ -1,0 +1,230 @@
+<!-- auth/login.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Fique Fluente</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container { 
+            background: white; 
+            padding: 2.5rem; 
+            border-radius: 16px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            width: 100%; 
+            max-width: 450px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 3rem;
+        }
+        h2 { 
+            text-align: center; 
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            color: #333; 
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        input { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        button:hover:not(:disabled) { 
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .error { 
+            background: #fee; 
+            color: #c33; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+            border-left: 4px solid #c33;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .forgot-password {
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+        .forgot-password a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">📚</div>
+    <h2>Fique Fluente</h2>
+    <p class="subtitle">Acesse sua conta</p>
+    
+    <div id="errorMsg" class="error"></div>
+
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" required placeholder="seu@email.com">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" required placeholder="Sua senha">
+        </div>
+
+        <div class="forgot-password">
+            <a href="#">Esqueceu a senha?</a>
+        </div>
+
+        <button type="submit" id="btnSubmit">
+            Entrar
+        </button>
+    </form>
+
+    <div class="register-link">
+        Ainda não tem conta? <a href="register.html">Criar conta</a>
+    </div>
+</div>
+
+<script>
+    // ⚠️ CONFIGURAÇÃO DO SUPABASE
+    const SUPABASE_URL = 'https://rvgcniaowzmsudziiozf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2Z2NuaWFvd3ptc3Vkemxpb3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MjQxNzQsImV4cCI6MjA5MTQwMDE3NH0.uwwKFLuK-XyPoXPrB6_CseRTiD9d-iyMQSPWrFw-l-I';
+    
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    // Verifica se já está logado
+    async function checkAuth() {
+        const {  session } = await supabaseClient.auth.getSession();
+        if (session?.user) {
+            window.location.href = '../curso/index.html';
+        }
+    }
+    checkAuth();
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value.trim().toLowerCase();
+        const password = document.getElementById('password').value;
+
+        errorMsg.style.display = 'none';
+        setLoading(true);
+
+        try {
+            const {  error } = await supabaseClient.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+
+            // Login sucesso → redireciona
+            window.location.href = '../curso/index.html';
+
+        } catch (error) {
+            console.error('Erro no login:', error);
+            showError(error.message || 'Email ou senha incorretos.');
+            setLoading(false);
+        }
+    });
+
+    function showError(message) {
+        errorMsg.textContent = message;
+        errorMsg.style.display = 'block';
+    }
+
+    function setLoading(loading) {
+        if (loading) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = 'Entrando <span class="loading"></span>';
+        } else {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Entrar';
+        }
+    }
+</script>
+
+</body>
+</html>
