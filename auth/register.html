@@ -1,0 +1,124 @@
+<!-- auth/register.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Fique Fluente</title>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Estilos básicos (você pode personalizar depois) */
+        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #333; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #218838; }
+        .error { color: red; font-size: 0.9em; margin-top: 10px; text-align: center; display: none; }
+        .success { color: green; font-size: 0.9em; margin-top: 10px; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📚 Fique Fluente</h2>
+    <p style="text-align: center; color: #666;">Crie sua conta para acessar o curso</p>
+    
+    <div id="errorMsg" class="error"></div>
+    <div id="successMsg" class="success"></div>
+
+    <form id="registerForm">
+        <label>Nome Completo</label>
+        <input type="text" id="fullName" required placeholder="Seu nome">
+
+        <label>Email (o mesmo da compra)</label>
+        <input type="email" id="email" required placeholder="seu@email.com">
+
+        <label>Senha</label>
+        <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+
+        <button type="submit" id="btnSubmit">Criar Conta</button>
+    </form>
+</div>
+
+<script>
+    // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
+    const SUPABASE_URL = 'https://rvgcniaowzmsudziiozf.supabase.co';
+    const SUPABASE_ANON_KEY = 'COLE_SUA_ANON_KEY_AQUI'; 
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('registerForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const fullName = document.getElementById('fullName').value;
+        const email = document.getElementById('email').value.toLowerCase();
+        const password = document.getElementById('password').value;
+
+        // Limpa mensagens
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = 'Verificando...';
+
+        try {
+            // 1. Verifica se o email foi aprovado pela Cakto
+            // Chama a função RPC que criamos no Supabase
+            const {  isApproved, error: checkError } = await supabase.rpc('fiquefluente_check_approved_email', { p_email: email });
+
+            if (checkError) throw checkError;
+
+            if (!isApproved) {
+                throw new Error('❌ Email não encontrado. Use o mesmo email da compra na Cakto.');
+            }
+
+            // 2. Cria o usuário no Auth do Supabase
+            const {  authData, error: authError } = await supabase.auth.signUp({
+                email,
+                password,
+                options: { data: { full_name: fullName } }
+            });
+
+            if (authError) throw authError;
+
+            // 3. Salva os dados na tabela de usuários
+            const { error: insertError } = await supabase
+                .from('fiquefluente_users')
+                .insert({
+                    id: authData.user.id,
+                    email: email,
+                    full_name: fullName,
+                    password_hash: 'auth_managed' // Apenas marcador, o Supabase Auth gerencia a senha
+                });
+
+            if (insertError) throw insertError;
+
+            // 4. Marca o email como "usado" para não permitir outro cadastro com o mesmo email
+            await supabase.rpc('fiquefluente_mark_email_used', { p_email: email, p_user_id: authData.user.id });
+
+            // Sucesso!
+            successMsg.innerText = '✅ Conta criada! Redirecionando...';
+            successMsg.style.display = 'block';
+            
+            setTimeout(() => {
+                // Redireciona para o dashboard (vamos criar na próxima etapa)
+                window.location.href = '../curso/index.html'; 
+            }, 2000);
+
+        } catch (err) {
+            errorMsg.innerText = err.message;
+            errorMsg.style.display = 'block';
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = 'Criar Conta';
+        }
+    });
+</script>
+
+</body>
+</html>
