@@ -1,0 +1,648 @@
+<!-- curso/index.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Fique Fluente</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #556cd6;
+            --secondary: #764ba2;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --bg: #f8f9fc;
+            --card-bg: #ffffff;
+            --text: #2d3748;
+            --text-light: #718096;
+            --shadow: 0 10px 40px rgba(0,0,0,0.1);
+            --shadow-hover: 0 20px 60px rgba(0,0,0,0.15);
+            --radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header Flutuante */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Container Principal */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Boas-vindas */
+        .welcome {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .welcome h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .welcome p {
+            color: var(--text-light);
+        }
+
+        /* Progresso Geral */
+        .progress-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            animation: fadeIn 0.4s ease both;
+        }
+
+        .progress-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .progress-card .level {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-card .label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-card .percent {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        /* Skills Grid */
+        .skills-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .skill-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+            animation: fadeIn 0.4s ease both;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .skill-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .skill-icon {
+            font-size: 1.5rem;
+        }
+
+        .skill-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .lessons-list {
+            list-style: none;
+        }
+
+        .lesson-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .lesson-item:last-child {
+            border-bottom: none;
+        }
+
+        .lesson-name {
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .lesson-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-done {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-locked {
+            background: #e2e8f0;
+            color: #718096;
+        }
+
+        .btn-start {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 0.5rem;
+        }
+
+        .btn-start:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-start:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mensagens */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .container {
+                padding: 1rem;
+            }
+            .welcome h1 {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* Animação de entrada em cascata */
+        .progress-card:nth-child(1) { animation-delay: 0.1s; }
+        .progress-card:nth-child(2) { animation-delay: 0.15s; }
+        .progress-card:nth-child(3) { animation-delay: 0.2s; }
+        .progress-card:nth-child(4) { animation-delay: 0.25s; }
+        .progress-card:nth-child(5) { animation-delay: 0.3s; }
+        .progress-card:nth-child(6) { animation-delay: 0.35s; }
+        
+        .skill-card:nth-child(1) { animation-delay: 0.1s; }
+        .skill-card:nth-child(2) { animation-delay: 0.15s; }
+        .skill-card:nth-child(3) { animation-delay: 0.2s; }
+        .skill-card:nth-child(4) { animation-delay: 0.25s; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Flutuante -->
+    <header class="header">
+        <div class="logo">📚 Fique Fluente</div>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">👤</div>
+            <span id="userName">Carregando...</span>
+            <button class="btn-logout" id="btnLogout">Sair</button>
+        </div>
+    </header>
+
+    <!-- Container Principal -->
+    <main class="container">
+        
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Carregando seu progresso...</p>
+        </div>
+
+        <!-- Erro -->
+        <div id="errorMsg" class="alert alert-error"></div>
+
+        <!-- Conteúdo (oculto até carregar) -->
+        <div id="content" style="display: none;">
+            
+            <!-- Boas-vindas -->
+            <section class="welcome">
+                <h1>👋 Olá, <span id="welcomeName">Estudante</span>!</h1>
+                <p>Continue de onde parou ou explore novos níveis. Você está no caminho da fluência! 🚀</p>
+            </section>
+
+            <!-- Progresso por Nível -->
+            <section class="skills-section">
+                <h2 class="section-title">📊 Seu Progresso</h2>
+                <div class="progress-summary" id="levelsContainer">
+                    <!-- Cards gerados via JS -->
+                </div>
+            </section>
+
+            <!-- Lições por Skill -->
+            <section class="skills-section">
+                <h2 class="section-title">🎯 Lições Disponíveis</h2>
+                <div class="skills-grid" id="skillsContainer">
+                    <!-- Skills geradas via JS -->
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // ⚠️ CONFIGURAÇÃO DO SUPABASE
+        const SUPABASE_URL = 'https://rvgcniaowzmsudziiozf.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2Z2NuaWFvd3ptc3Vkemxpb3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MjQxNzQsImV4cCI6MjA5MTQwMDE3NH0.uwwKFLuK-XyPoXPrB6_CseRTiD9d-iyMQSPWrFw-l-I';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Elementos DOM
+        const loadingEl = document.getElementById('loading');
+        const contentEl = document.getElementById('content');
+        const errorMsg = document.getElementById('errorMsg');
+        const userNameEl = document.getElementById('userName');
+        const welcomeNameEl = document.getElementById('welcomeName');
+        const userAvatarEl = document.getElementById('userAvatar');
+        const btnLogout = document.getElementById('btnLogout');
+        const levelsContainer = document.getElementById('levelsContainer');
+        const skillsContainer = document.getElementById('skillsContainer');
+
+        // Níveis e Skills
+        const LEVELS = ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'];
+        const SKILLS = [
+            { id: 'reading', label: '📖 Reading', icon: '📖' },
+            { id: 'listening', label: '🎧 Listening', icon: '🎧' },
+            { id: 'writing', label: '✍️ Writing', icon: '✍️' },
+            { id: 'speaking', label: '🗣️ Speaking', icon: '🗣️' }
+        ];
+
+        // ========================================
+        // INICIALIZAÇÃO
+        // ========================================
+        async function init() {
+            try {
+                // Verifica sessão
+                const {  session, error: sessionError } = await supabase.auth.getSession();
+                
+                if (sessionError || !session?.user) {
+                    throw new Error('Não autenticado');
+                }
+
+                // Busca dados do usuário
+                const {  userData, error: userError } = await supabase
+                    .from('fiquefluente_users')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (userError) throw userError;
+
+                // Atualiza UI com dados do usuário
+                updateUserUI(userData);
+
+                // Carrega progresso
+                await loadProgress(userData);
+
+                // Carrega lições
+                await loadLessons();
+
+                // Mostra conteúdo
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+
+            } catch (error) {
+                console.error('Erro ao carregar dashboard:', error);
+                showError('❌ Erro ao carregar dados. Faça login novamente.');
+                // Redireciona para login após 3 segundos
+                setTimeout(() => {
+                    window.location.href = '../auth/register.html';
+                }, 3000);
+            }
+        }
+
+        // ========================================
+        // ATUALIZA UI DO USUÁRIO
+        // ========================================
+        function updateUserUI(user) {
+            const name = user.full_name || 'Estudante';
+            const initial = name.charAt(0).toUpperCase();
+            
+            userNameEl.textContent = name.split(' ')[0];
+            welcomeNameEl.textContent = name;
+            userAvatarEl.textContent = initial;
+        }
+
+        // ========================================
+        // CARREGA PROGRESSO POR NÍVEL
+        // ========================================
+        async function loadProgress(user) {
+            const progress = user.level_progress || {};
+            
+            levelsContainer.innerHTML = LEVELS.map((level, index) => {
+                const percent = progress[level] || 0;
+                const isLocked = index > 0 && (progress[LEVELS[index-1]] || 0) < 100;
+                
+                return `
+                    <div class="progress-card" data-level="${level}" ${isLocked ? 'style="opacity: 0.6;"' : ''}>
+                        <div class="level">${level.toUpperCase()}</div>
+                        <div class="label">${getLevelName(level)}</div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="percent">${percent}%</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Adiciona clique nos cards (exceto bloqueados)
+            document.querySelectorAll('.progress-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const level = e.currentTarget.dataset.level;
+                    // Futuro: filtrar lições por nível
+                    alert(`Nível ${level.toUpperCase()} - Em desenvolvimento! 🚧`);
+                });
+            });
+        }
+
+        function getLevelName(level) {
+            const names = {
+                'a1': 'Iniciante',
+                'a2': 'Básico',
+                'b1': 'Intermédio',
+                'b2': 'Intermédio Alto',
+                'c1': 'Avançado',
+                'c2': 'Proficiente'
+            };
+            return names[level] || level.toUpperCase();
+        }
+
+        // ========================================
+        // CARREGA LIÇÕES POR SKILL
+        // ========================================
+        async function loadLessons() {
+            // Busca lições do nível atual do usuário (A1 para MVP)
+            const currentLevel = 'a1'; // MVP: começa no A1
+            
+            const {  lessons, error } = await supabase
+                .from('fiquefluente_lessons')
+                .select('*')
+                .eq('level', currentLevel)
+                .order('order_number');
+
+            if (error) {
+                console.error('Erro ao carregar lições:', error);
+                return;
+            }
+
+            // Agrupa lições por skill
+            const lessonsBySkill = {};
+            SKILLS.forEach(skill => {
+                lessonsBySkill[skill.id] = lessons?.filter(l => l.skill === skill.id) || [];
+            });
+
+            // Renderiza cards de skill
+            skillsContainer.innerHTML = SKILLS.map(skill => {
+                const skillLessons = lessonsBySkill[skill.id];
+                
+                return `
+                    <div class="skill-card">
+                        <div class="skill-header">
+                            <span class="skill-icon">${skill.icon}</span>
+                            <span class="skill-title">${skill.label}</span>
+                        </div>
+                        <ul class="lessons-list">
+                            ${skillLessons.length > 0 
+                                ? skillLessons.map(lesson => `
+                                    <li class="lesson-item">
+                                        <span class="lesson-name">${lesson.title}</span>
+                                        <button class="btn-start" data-lesson="${lesson.id}">
+                                            Iniciar
+                                        </button>
+                                    </li>
+                                `).join('')
+                                : '<li class="lesson-item"><span style="color: var(--text-light)">Em breve...</span></li>'
+                            }
+                        </ul>
+                    </div>
+                `;
+            }).join('');
+
+            // Adiciona eventos aos botões "Iniciar"
+            document.querySelectorAll('.btn-start').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const lessonId = e.currentTarget.dataset.lesson;
+                    startLesson(lessonId);
+                });
+            });
+        }
+
+        // ========================================
+        // INICIAR LIÇÃO
+        // ========================================
+        function startLesson(lessonId) {
+            // Futuro: redirecionar para página da lição
+            console.log('Iniciando lição:', lessonId);
+            alert(`🚀 Iniciando lição ${lessonId}...\n\n(Esta funcionalidade será implementada na próxima etapa!)`);
+        }
+
+        // ========================================
+        // LOGOUT
+        // ========================================
+        btnLogout.addEventListener('click', async () => {
+            if (confirm('Deseja realmente sair?')) {
+                await supabase.auth.signOut();
+                window.location.href = '../index.html';
+            }
+        });
+
+        // ========================================
+        // UTILITÁRIOS
+        // ========================================
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            loadingEl.style.display = 'none';
+        }
+
+        // ========================================
+        // INICIA APP
+        // ========================================
+        init();
+
+        // Escuta mudanças de auth (para lidar com refresh)
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') {
+                window.location.href = '../index.html';
+            }
+        });
+    </script>
+</body>
+</html>
