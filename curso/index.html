@@ -422,8 +422,9 @@
         const SUPABASE_URL = 'https://rvgcniaowzmsudziiozf.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2Z2NuaWFvd3ptc3Vkemxpb3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MjQxNzQsImV4cCI6MjA5MTQwMDE3NH0.uwwKFLuK-XyPoXPrB6_CseRTiD9d-iyMQSPWrFw-l-I';
         
-// Usa a instância global ou cria uma nova
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ✅ Cria o cliente com nome diferente para evitar conflito com window.supabase
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         // Elementos DOM
         const loadingEl = document.getElementById('loading');
         const contentEl = document.getElementById('content');
@@ -450,14 +451,14 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
         async function init() {
             try {
                 // Verifica sessão
-                const {  session, error: sessionError } = await supabase.auth.getSession();
+                const {  session, error: sessionError } = await supabaseClient.auth.getSession();
                 
                 if (sessionError || !session?.user) {
                     throw new Error('Não autenticado');
                 }
 
                 // Busca dados do usuário
-                const {  userData, error: userError } = await supabase
+                const {  userData, error: userError } = await supabaseClient
                     .from('fiquefluente_users')
                     .select('*')
                     .eq('id', session.user.id)
@@ -526,7 +527,6 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
             document.querySelectorAll('.progress-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     const level = e.currentTarget.dataset.level;
-                    // Futuro: filtrar lições por nível
                     alert(`Nível ${level.toUpperCase()} - Em desenvolvimento! 🚧`);
                 });
             });
@@ -548,10 +548,10 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
         // CARREGA LIÇÕES POR SKILL
         // ========================================
         async function loadLessons() {
-            // Busca lições do nível atual do usuário (A1 para MVP)
-            const currentLevel = 'a1'; // MVP: começa no A1
+            // MVP: começa no A1
+            const currentLevel = 'a1';
             
-            const {  lessons, error } = await supabase
+            const {  lessons, error } = await supabaseClient
                 .from('fiquefluente_lessons')
                 .select('*')
                 .eq('level', currentLevel)
@@ -608,7 +608,6 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
         // INICIAR LIÇÃO
         // ========================================
         function startLesson(lessonId) {
-            // Futuro: redirecionar para página da lição
             console.log('Iniciando lição:', lessonId);
             alert(`🚀 Iniciando lição ${lessonId}...\n\n(Esta funcionalidade será implementada na próxima etapa!)`);
         }
@@ -618,7 +617,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
         // ========================================
         btnLogout.addEventListener('click', async () => {
             if (confirm('Deseja realmente sair?')) {
-                await supabase.auth.signOut();
+                await supabaseClient.auth.signOut();
                 window.location.href = '../index.html';
             }
         });
@@ -637,8 +636,8 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
         // ========================================
         init();
 
-        // Escuta mudanças de auth (para lidar com refresh)
-        supabase.auth.onAuthStateChange((event, session) => {
+        // Escuta mudanças de auth
+        supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') {
                 window.location.href = '../index.html';
             }
