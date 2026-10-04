@@ -1,0 +1,1 @@
+Set GEMINI_API_KEY as a Supabase Edge Function secret to enable Gemini. Without it, the function uses a local free fallback evaluator. The function requires a valid Supabase Auth JWT.
